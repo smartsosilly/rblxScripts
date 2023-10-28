@@ -42,13 +42,13 @@ _G.Setting = {
         SkipCutscene = true
     },
     AutoSell = { -- Please be careful
-        Enabled = true,
+        Enabled = false,
         Common = true, -- green 
         Rare = true, -- blue 
         Legendary = true -- red
     },
     ItemNotifier = {
-        Enabled = true,
+        Enabled = false,
         webhookLink = 'https://discord.com/api/webhooks/',
         PingForRarity = {
             Common = true, -- green
@@ -59,7 +59,7 @@ _G.Setting = {
         }
     },
     DisconnectNotifier = {
-        Enabled = true,
+        Enabled = false,
         UserId = "",
         webhookLink = 'https://discord.com/api/webhooks/'
     },
@@ -71,10 +71,10 @@ _G.Setting = {
         Enabled = true,
         Candy = 'Inf',
         Gold = 'Inf',
-        Profile = 'rbxassetid://15149943495',
-        Ability = "rbxassetid://3121097847"
+        Profile = 'rbxassetid://15196403350',
+        Ability = "rbxassetid://15149943495"
     }
 }
 
 loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/sapondanaisriwan/roblox/main/treasure-quest/Adashima-Quest.lua"))()
+    "https://raw.githubusercontent.com/smartsosilly/rblxScripts/main/srcs/treasureQuest"))()
