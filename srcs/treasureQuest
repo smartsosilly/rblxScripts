@@ -174,8 +174,8 @@ end
 
 function creditUI()
     RunService.Stepped:Connect(function()
-        playerCard.Health.Text = "GAMING CHAIR"
-        playerCard.XP.Text = "WEEB QUEST"
+        playerCard.Health.Text = "SILLY QUEST"
+        playerCard.XP.Text = "PLEASE TOUCH SOME GRASS"
         playerCard.Level.Visible = false
     end)
 end
