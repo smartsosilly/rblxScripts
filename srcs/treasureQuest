@@ -1,0 +1,1156 @@
+if not require then
+    return game.Players.LocalPlayer:Kick("Your Exploit doesn't support")
+end
+
+if not firetouchinterest then
+    return game.Players.LocalPlayer:Kick("Your Exploit doesn't support")
+end
+
+local isWaveDefense
+local isPumpkinEvent
+local isLobby = game.PlaceId == 2960777560
+
+-- Services
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+
+-- waiting for game load
+while not game:IsLoaded() do
+    RunService.Heartbeat:Wait()
+end
+
+function bypassAntiCheat()
+    local exploiterController = game:GetService("Players").LocalPlayer.PlayerScripts.Shared.Client:WaitForChild(
+        'DumbExploiterController')
+
+    -- bypass anti-cheat
+    local cheat = require(exploiterController)
+    cheat._Update = function()
+        return
+    end
+
+    cheat._SetupDummyRemotes = function()
+        return
+    end
+
+    warn('Bypassing Anticheat')
+
+    while not game:GetService("Players") do
+        wait()
+    end
+
+    while not game:GetService("ReplicatedStorage") do
+        wait()
+    end
+
+    task.wait(2)
+
+    game:GetService("Players").Name = 'Players'
+    game:GetService("ReplicatedStorage").Name = 'ReplicatedStorage'
+    workspace.Name = 'Workspace'
+
+    if isLobby then
+        return
+    end
+
+    workspace:GetChildren()[5].Name = 'Dungeon'
+
+    -- Wave defense
+    if workspace.Dungeon:FindFirstChild("EnemySpawns") then
+        workspace.Dungeon:GetChildren()[5].Name = 'Enemies'
+        isWaveDefense = workspace.Dungeon:FindFirstChild("EnemySpawns")
+        return
+    end
+
+    -- Nomal dungeon
+    workspace.Dungeon:GetChildren()[1].Name = 'Enemies'
+    workspace.Dungeon:GetChildren()[2].Name = 'Rooms'
+
+    -- Pumpkin Event
+    if workspace.Dungeon.Rooms:FindFirstChild("Start"):FindFirstChild("Traps") then
+        isPumpkinEvent = true
+    end
+end
+
+bypassAntiCheat()
+
+function getPlayer()
+    while not game:GetService('Players').LocalPlayer do
+        RunService.Heartbeat:Wait()
+    end
+    while not game:GetService('Players').LocalPlayer.Character do
+        RunService.Heartbeat:Wait()
+    end
+    while not game:GetService('Players').LocalPlayer.Character:FindFirstChild("HumanoidRootPart") do
+        RunService.Heartbeat:Wait()
+    end
+    while not game:GetService('Players').LocalPlayer.Character:FindFirstChild("Humanoid") do
+        RunService.Heartbeat:Wait()
+    end
+
+    local player = game:GetService('Players').LocalPlayer
+    local cha = game:GetService('Players').LocalPlayer.Character
+    local plr = game:GetService('Players').LocalPlayer.Character.HumanoidRootPart
+    local hum = game:GetService('Players').LocalPlayer.Character.Humanoid
+    return player, cha, plr, hum
+end
+
+function getDungeon()
+
+    while not game:GetService("Workspace"):FindFirstChild("Dungeon") do
+        RunService.Heartbeat:Wait()
+    end
+    while not game:GetService("Workspace"):FindFirstChild("Dungeon"):FindFirstChild("Rooms") do
+        RunService.Heartbeat:Wait()
+    end
+    while not game:GetService("Workspace"):FindFirstChild("Dungeon"):FindFirstChild("Enemies") do
+        RunService.Heartbeat:Wait()
+    end
+    while not game:GetService("Workspace"):FindFirstChild("Dungeon"):FindFirstChild("Shrines") do
+        RunService.Heartbeat:Wait()
+    end
+
+    local dungeon = game:GetService("Workspace").Dungeon
+    local rooms = dungeon.Rooms
+    local enemies = dungeon.Enemies
+    local shrines = dungeon.Shrines
+    return dungeon, rooms, enemies, shrines
+end
+
+function getWaveDefense()
+    while not game:GetService("Workspace"):FindFirstChild("Dungeon") do
+        RunService.Heartbeat:Wait()
+    end
+    while not game:GetService("Workspace"):FindFirstChild("Dungeon"):FindFirstChild("Rooms") do
+        RunService.Heartbeat:Wait()
+    end
+    while not game:GetService("Workspace"):FindFirstChild("Dungeon"):FindFirstChild("Enemies") do
+        RunService.Heartbeat:Wait()
+    end
+    local dungeon = game:GetService("Workspace").Dungeon
+    local enemies = dungeon.Enemies
+    local rooms = dungeon.Rooms
+    return dungeon, rooms, enemies
+end
+
+-- Varaibles
+local player, cha, plr, hum = getPlayer()
+local mainFrame = game:GetService("Players")[cha.Name].PlayerGui:WaitForChild("MainGui"):WaitForChild("MainFrame")
+local rightSideFrame = mainFrame:WaitForChild("Right")
+local topSideFrame = mainFrame:WaitForChild("Top")
+local playerCard = mainFrame:WaitForChild("Bottom"):WaitForChild("PlayerCard")
+local CombatController = require(player.PlayerScripts.Shared.Client.CombatController)
+local InventoryController = require(game:GetService("Players").LocalPlayer.PlayerScripts:WaitForChild("Shared")
+    :WaitForChild("Client"):WaitForChild("InventoryController"))
+
+function customSky()
+    if not _G.Setting.CustomSky.Enabled then
+        return
+    end
+    local sky = Instance.new("Sky", game.Lighting)
+    sky.SkyboxBk = _G.Setting.CustomSky.SkyId
+    sky.SkyboxDn = _G.Setting.CustomSky.SkyId
+    sky.SkyboxFt = _G.Setting.CustomSky.SkyId
+    sky.SkyboxLf = _G.Setting.CustomSky.SkyId
+    sky.SkyboxRt = _G.Setting.CustomSky.SkyId
+    sky.SkyboxUp = _G.Setting.CustomSky.SkyId
+end
+
+function customUI()
+
+    if not _G.Setting.CustomUI.Enabled then
+        return
+    end
+
+    playerCard.Picture.ScaleType = 'Crop'
+    RunService.Stepped:Connect(function()
+        rightSideFrame.CurrencyDisplay.Value.Text = _G.Setting.CustomUI.Gold
+        rightSideFrame.CurrencyDisplay.HolidayCurrency.Value.Text = _G.Setting.CustomUI.Candy
+        playerCard.Picture.Image = _G.Setting.CustomUI.Profile
+        playerCard.Ability.PrimaryButton.Frame.Picture.Image = _G.Setting.CustomUI.Ability
+        playerCard.Ability.PrimaryButton.Cooldown.Bar.Picture.Image = _G.Setting.CustomUI.Ability
+    end)
+end
+
+function creditUI()
+    RunService.Stepped:Connect(function()
+        playerCard.Health.Text = "GAMING CHAIR"
+        playerCard.XP.Text = "WEEB QUEST"
+        playerCard.Level.Visible = false
+    end)
+end
+
+function killAura(monster)
+    for _, damage in ipairs(game:GetService("Workspace").Ignore:GetDescendants()) do
+        if damage.ClassName ~= "Model" then
+            pcall(function()
+                damage.Transparency = 1
+                damage.CFrame = CFrame.new(monster.HumanoidRootPart.Position)
+                damage.Position = monster.HumanoidRootPart.Position
+            end)
+        end
+    end
+end
+
+function collectMedkits()
+    while _G.Setting.AutoFarm.Enabled and _G.Setting.AutoFarm.CollectMedkits do
+        local player, cha, plr, hum = getPlayer()
+        for _, v in pairs(game:GetService("Workspace").Ignore:GetChildren()) do
+            if v.Name == "Medkit" and v:FindFirstChildWhichIsA("TouchTransmitter", true) then
+                if hum.Health < hum.MaxHealth then
+                    firetouchinterest(plr, v, 0)
+                    firetouchinterest(plr, v, 1)
+                end
+            end
+        end
+        RunService.Heartbeat:Wait()
+    end
+end
+
+function collectChest()
+    while _G.Setting.AutoFarm.Enabled and _G.Setting.AutoFarm.CollectChest do
+        local player, cha, plr, hum = getPlayer()
+        local dungeon, rooms, enemies, shrines = getDungeon()
+        for _, v in ipairs(rooms:GetDescendants()) do
+            if v:FindFirstChild('TouchInterest') and v.Parent then
+                if v.Parent.Name == "Chest" then
+                    v.Transparency = 1
+                    v.CFrame = plr.CFrame
+                end
+            end
+        end
+        RunService.Heartbeat:Wait()
+    end
+end
+
+function goToFinishRoom()
+    while _G.Setting.AutoFarm.Enabled and _G.Setting.AutoFarm.GoToFinishRoom do
+        local player, cha, plr, hum = getPlayer()
+        local dungeon, rooms, enemies, shrines = getDungeon()
+        for _, v in ipairs(rooms:GetDescendants()) do
+            if v:FindFirstChild('TouchInterest') and v.Parent then
+                if v.Name == "Part" then
+                    v.Transparency = 1
+                    v.CFrame = plr.CFrame
+                end
+            end
+        end
+        RunService.Heartbeat:Wait()
+    end
+end
+
+function noClip()
+    while _G.Noclip do
+        local player, cha, plr, hum = getPlayer()
+        for _, v in ipairs(cha:GetDescendants()) do
+            if v:IsA("BasePart") then
+                v.CanCollide = false
+            end
+        end
+        RunService.Heartbeat:Wait()
+    end
+end
+
+function startGame()
+
+    if not _G.Setting.AutoFarm.Enabled and not _G.Setting.AutoFarm.AutoStartDungeon.Enabled then
+        return
+    end
+
+    local remotes = game:GetService("ReplicatedStorage").Dungeon.Remotes
+    local mainFrame = game:GetService("Players")[cha.Name].PlayerGui:WaitForChild("MainGui"):WaitForChild("MainFrame")
+
+    task.wait(_G.Setting.AutoFarm.AutoStartDungeon.Delay)
+
+    remotes.StartWaveDefense:FireServer()
+    remotes.StartDungeon:FireServer()
+
+    mainFrame.Top.StartButton.Changed:Connect(function(v)
+        task.wait(_G.Setting.AutoFarm.AutoStartDungeon.Delay)
+        remotes.StartWaveDefense:FireServer()
+        remotes.StartDungeon:FireServer()
+    end)
+end
+
+function attack()
+    CombatController.BasicAttack(CombatController)
+    RunService.Heartbeat:Wait()
+    CombatController.UseAbility(CombatController)
+end
+
+function fpsBoots()
+
+    if not _G.Setting.AntiLag.Enabled or not _G.Setting.AntiLag.fpsBoost then
+        return
+    end
+
+    local a = game
+    local b = workspace
+    local c = a.Lighting
+    local d = b.Terrain
+    d.WaterWaveSize = 0
+    d.WaterWaveSpeed = 0
+    d.WaterReflectance = 0
+    d.WaterTransparency = 0
+    c.GlobalShadows = false
+    c.FogEnd = 9e9
+    c.Brightness = 0
+    settings().Rendering.QualityLevel = "Level01"
+    for e, f in pairs(a:GetDescendants()) do
+        if f:IsA("Part") or f:IsA("Union") or f:IsA("CornerWedgePart") or f:IsA("TrussPart") then
+            f.Material = "Plastic"
+            f.Reflectance = 0
+        elseif f:IsA("Decal") or f:IsA("Texture") then
+            f.Transparency = 0
+        elseif f:IsA("ParticleEmitter") or f:IsA("Trail") then
+            f.Lifetime = NumberRange.new(0)
+        elseif f:IsA("Explosion") then
+            f.BlastPressure = 0
+            f.BlastRadius = 0
+        elseif f:IsA("Fire") or f:IsA("SpotLight") or f:IsA("Smoke") or f:IsA("Sparkles") then
+            f.Enabled = false
+        elseif f:IsA("MeshPart") then
+            f.Material = "Plastic"
+            f.Reflectance = 0
+            f.TextureID = 10385902758728957
+        end
+    end
+    for e, g in pairs(c:GetChildren()) do
+        if g:IsA("BlurEffect") or g:IsA("SunRaysEffect") or g:IsA("ColorCorrectionEffect") or g:IsA("BloomEffect") or
+            g:IsA("DepthOfFieldEffect") then
+            g.Enabled = false
+        end
+    end
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v.ClassName == "Part" or v.ClassName == "SpawnLocation" or v.ClassName == "WedgePart" or v.ClassName ==
+            "Terrain" or v.ClassName == "MeshPart" then
+            v.Material = "Plastic"
+        end
+    end
+    -- game:GetService('RunService'):Set3dRenderingEnabled(false)
+    sethiddenproperty(game.Lighting, "Technology", "Compatibility")
+end
+
+function removeMobs()
+    while _G.Setting.AntiLag.Enabled and _G.Setting.AntiLag.RemoveMobs do
+        local dungeon, rooms, enemies, shrines = getDungeon()
+        for _, monster in ipairs(enemies:GetChildren()) do
+            if monster:FindFirstChild("EvilHumanoid") and monster:FindFirstChild("HumanoidRootPart") then
+                if monster.EvilHumanoid.Health <= 0 then
+                    pcall(function()
+                        monster:Destroy();
+                    end)
+                end
+            end
+        end
+        RunService.Heartbeat:Wait()
+    end
+end
+
+function hitboxExpander()
+    while _G.Setting.AutoFarm.Enabled and _G.Setting.AutoFarm.HitboxExpander do
+        local dungeon, rooms, enemies, shrines = getDungeon()
+        for _, monster in ipairs(enemies:GetChildren()) do
+            if monster:FindFirstChild("EvilHumanoid") and monster:FindFirstChild("HumanoidRootPart") and
+                monster.EvilHumanoid.Health >= 0 then
+                local monsterRootPart = monster.HumanoidRootPart
+                if monsterRootPart.Size ~= Vector3.new(50, 30, 50) then
+                    monsterRootPart.Size = Vector3.new(50, 30, 50)
+                    monsterRootPart.Transparency = 1
+                end
+            end
+        end
+        RunService.Heartbeat:Wait()
+    end
+end
+
+function destroyWaveMap()
+    if workspace.Dungeon:FindFirstChild("Extra") then
+        workspace.Dungeon:FindFirstChild("Extra"):Destroy()
+    end
+end
+
+function destroyMap()
+
+    if _G.Setting.AntiLag.Enabled and _G.Setting.AntiLag.DestroyMap and isWaveDefense then
+        if workspace.Dungeon.Rooms:FindFirstChild("Extra") then
+            workspace.Terrain:Clear()
+            workspace.Dungeon.Rooms:FindFirstChild("Extra"):Destroy()
+            return
+        end
+    end
+
+    while _G.Setting.AntiLag.Enabled and _G.Setting.AntiLag.DestroyMap do
+        local dungeon, rooms, enemies, shrines = getDungeon()
+        for _, v in ipairs(rooms:GetDescendants()) do
+            if v:FindFirstChild('Extras') then
+                workspace.Terrain:Clear()
+                v.Extras:Destroy()
+            end
+            if v:FindFirstChild('Extra') then
+                workspace.Terrain:Clear()
+                v.Extra:Destroy()
+            end
+        end
+        RunService.Heartbeat:Wait()
+    end
+end
+
+function optimizeMobs()
+    while _G.Setting.AntiLag.Enabled and _G.Setting.AntiLag.OptimizeMobs do
+        local dungeon, rooms, enemies, shrines = getDungeon()
+        for _, v in pairs(enemies:GetDescendants()) do
+            if v.ClassName == "Accessory" then
+                v:Destroy()
+            end
+            if v:FindFirstChild("+Appearance") then
+                v["+Appearance"]:Destroy()
+            end
+        end
+        RunService.Heartbeat:Wait()
+    end
+end
+
+function getNearestTarget()
+    local target
+    local closet = math.huge
+    local player, cha, plr, hum = getPlayer()
+    local dungeon, rooms, enemies, shrines = getDungeon()
+    for _, v in pairs(enemies:GetChildren()) do
+        if v:FindFirstChild("EvilHumanoid") and v:FindFirstChild("HumanoidRootPart") and v.EvilHumanoid.Health > 0 then
+            local distance = (v.HumanoidRootPart.Position - plr.Position).Magnitude
+            if distance < closet then
+                closet = distance
+                target = v
+            end
+        end
+    end
+    return target
+end
+
+function getNearestAttack()
+    local nearestAttack = nil
+    local closestDistance = math.huge
+    local player, cha, plr, hum = getPlayer()
+    for _, v in pairs(workspace:GetChildren()) do
+        if v:IsA("Part") then
+            local distance = (v.Position - plr.Position).Magnitude
+            if distance < closestDistance then
+                closestDistance = distance
+                nearestAttack = v
+            end
+        end
+    end
+
+    return nearestAttack, closestDistance
+end
+
+function floating()
+    while wait() do
+        local player, cha, plr, hum = getPlayer()
+        if not plr:FindFirstChild('BodyVelocity') then
+            local BodyVelocity = Instance.new("BodyVelocity", plr)
+            BodyVelocity.Velocity = Vector3.new()
+            BodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+            -- BodyVelocity.P = 1250
+        end
+    end
+end
+
+function tweenTo(table, callback)
+    local player, cha, plr, hum = getPlayer()
+    local target, targetPart, newCFrame = table.target, table.targetPart, table.newCFrame
+
+    local tic_k = tick();
+
+    local movementSpeed = 70
+
+    if isWaveDefense then
+        movementSpeed = 50
+    end
+
+    local distance = (targetPart.Position - plr.Position).Magnitude
+    local duration = distance / movementSpeed
+
+    local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Linear)
+    local tweenCFrame
+
+    if newCFrame then
+        tweenCFrame = CFrame.new(targetPart.Position) * newCFrame
+    else
+        tweenCFrame = CFrame.new(targetPart.Position)
+    end
+
+    -- if duration == 0 then
+    --     duration = (newCFrame.X + newCFrame.Y + newCFrame.Z) / movementSpeed
+    --     plr.CFrame = targetPart.CFrame * newCFrame
+    --     return
+    -- end
+
+    -- plr.Velocity = Vector3.new();
+
+    local tween = TweenService:Create(plr, tweenInfo, {
+        CFrame = tweenCFrame
+    })
+    tween:Play()
+    if callback then
+        tween.Completed:Wait()
+        print("Completed")
+        callback()
+    end
+end
+
+function pressE()
+    game:service('VirtualInputManager'):SendKeyEvent(true, "E", false, game)
+end
+
+function getShrines()
+    local target
+    local dungeon, rooms, enemies, shrines = getDungeon()
+    local shrines = dungeon:WaitForChild("Shrines")
+    for _, shrine in ipairs(shrines:GetChildren()) do
+        if shrine:FindFirstChild("Primary") and shrine.Primary:FindFirstChild("ProximityPrompt") then
+            if table.find(_G.Setting.AutoFarm.CollectShrines.ToCollect, shrine.Name) then
+                target = shrine
+            end
+        end
+    end
+    return target
+end
+
+function fastFarming()
+
+    if not _G.Setting.AutoFarm.Enabled then
+        return
+    end
+
+    while _G.Setting.AutoFarm.FastFarming do
+        local dungeon, rooms, enemies, shrines = getDungeon()
+        for _, monster in ipairs(enemies:GetChildren()) do
+            if monster:FindFirstChild("EvilHumanoid") and monster:FindFirstChild("HumanoidRootPart") and
+                monster.EvilHumanoid.Health > 0 then
+                spawn(attack)
+                killAura(monster)
+            end
+        end
+        RunService.Heartbeat:Wait()
+    end
+
+    while not _G.Setting.AutoFarm.FastFarming do
+        local player, cha, plr, hum = getPlayer()
+        local monster = getNearestTarget()
+        if monster then
+            spawn(attack)
+            killAura(monster)
+        end
+        RunService.Heartbeat:Wait()
+    end
+end
+
+function collectShrines(shrine)
+    spawn(pressE)
+    tweenTo({
+        target = shrine,
+        targetPart = shrine.Primary
+    })
+end
+
+function NoMobsFound()
+    local dungeon, rooms, enemies, shrines = getDungeon()
+
+    if not _G.Setting.AutoFarm.CollectChest then
+        return
+    end
+
+    if rooms:FindFirstChild("FinishRoom") and rooms.FinishRoom:FindFirstChild("Hitbox") then
+        tweenTo({
+            targetPart = rooms.FinishRoom.Hitbox.Part
+        })
+    end
+end
+
+function tpToMonsters()
+    local player, cha, plr, hum = getPlayer()
+    -- local attackObject, attackDistance = getNearestAttack()
+    local shrine = getShrines()
+    local monster = getNearestTarget()
+
+    if shrine and _G.Setting.AutoFarm.CollectShrines.Enabled then
+        collectShrines(shrine)
+        return
+    end
+
+    if not monster then
+        NoMobsFound()
+        return
+    end
+
+    if _G.Setting.AutoFarm.TpToSafeZone then
+        return
+    end
+
+    tweenTo({
+        targetPart = monster.HumanoidRootPart,
+        newCFrame = CFrame.new(0, 70, 0)
+    })
+
+end
+
+function generateRandomString()
+    local chars = {"q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "a", "s", "d", "f", "g", "h", "j", "k", "l", "z",
+                   "x", "c", "v", "b", "n", "m", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "X", "A", "B", "V",
+                   "R", "I", "O", "P", "L"}
+    local str = ""
+    for i = 1, 16 do
+        str = str .. chars[math.random(1, #chars)]
+    end
+    return str
+end
+
+local randomPartName1 = generateRandomString()
+local randomPartName2 = generateRandomString()
+local randomPartName3 = generateRandomString()
+local randomPartName4 = generateRandomString()
+local cameraPartName = generateRandomString()
+
+function createPlatForm(name, offSet)
+    local plat = Instance.new("Part", workspace.Characters)
+    plat.Size = Vector3.new(20, 1, 20)
+    plat.Anchored = true
+    plat.Transparency = 0.5
+    plat.Name = name
+    if isWaveDefense then
+        local dungeon, rooms, enemies, shrines = getDungeon()
+        plat.CFrame = dungeon.Spawn.CFrame * offSet
+    elseif isPumpkinEvent then
+        local dungeon, rooms, enemies, shrines = getDungeon()
+        plat.CFrame = rooms:WaitForChild("Room").GroupButtons.GroupButton4.Primary.CFrame * offSet
+    else
+        plat.CFrame = plat.CFrame * offSet
+    end
+end
+
+function tpToParts()
+    tweenTo({
+        targetPart = workspace.Characters:FindFirstChild(randomPartName1),
+        newCFrame = CFrame.new(0, 10, 0)
+    }, function()
+        tweenTo({
+            targetPart = workspace.Characters:FindFirstChild(randomPartName2),
+            newCFrame = CFrame.new(0, 10, 0)
+        }, function()
+            tweenTo({
+                targetPart = workspace.Characters:FindFirstChild(randomPartName4),
+                newCFrame = CFrame.new(0, 10, 0)
+            }, function()
+                tweenTo({
+                    targetPart = workspace.Characters:FindFirstChild(randomPartName3),
+                    newCFrame = CFrame.new(0, 10, 0)
+                }, function()
+                end)
+            end)
+        end)
+    end)
+end
+
+function tpToSafeZone()
+    while _G.Setting.AutoFarm.Enabled and _G.Setting.AutoFarm.TpToSafeZone do
+        local player, cha, plr, hum = getPlayer()
+        local dungeon, rooms, enemies, shrines = getDungeon()
+        local monster = getNearestTarget()
+
+        local offSetX, offSetY, offSetZ
+
+        if isWaveDefense then
+            offSetX = 300
+            offSetY = 200
+            offSetZ = 300
+        elseif isPumpkinEvent then
+            offSetX = 200
+            offSetY = 100
+            offSetZ = 200
+        else
+            offSetX = math.random(1000, 2000)
+            offSetY = math.random(300, 400)
+            offSetZ = math.random(1000, 2000)
+        end
+
+        local topLeft = CFrame.new(offSetX, offSetY, offSetZ)
+        local topRight = CFrame.new(-offSetX, offSetY, offSetZ)
+        local bottomLeft = CFrame.new(offSetX, offSetY, -offSetZ)
+        local bottomRight = CFrame.new(-offSetX, offSetY, -offSetZ)
+
+        local randomOffSet = CFrame.new(math.random(1000, 2000), math.random(300, 400), math.random(1000, 2000))
+
+        if not workspace.Characters:FindFirstChild(randomPartName1) then
+            createPlatForm(randomPartName1, topLeft) -- top left
+        end
+        if not workspace.Characters:FindFirstChild(randomPartName2) then
+            createPlatForm(randomPartName2, topRight)
+        end
+        if not workspace.Characters:FindFirstChild(randomPartName4) then
+            createPlatForm(randomPartName4, bottomRight)
+        end
+        if not workspace.Characters:FindFirstChild(randomPartName3) then
+            createPlatForm(randomPartName3, bottomLeft)
+        end
+        if not workspace.Characters:FindFirstChild(cameraPartName) then
+            createPlatForm(cameraPartName,
+                CFrame.new(math.random(1000, 2000), math.random(300, 400), math.random(1000, 2000)))
+        end
+
+        if isWaveDefense then
+            tpToParts()
+        elseif isPumpkinEvent and rooms:FindFirstChild("Room") then
+            if monster then
+                if monster.Name == "Skullgourd" or monster.Name == "Bloodgourd" then
+                    tpToParts()
+                end
+            else
+                tweenTo({
+                    targetPart = rooms.Room.GroupButtons.GroupButton4.Primary
+                })
+            end
+        else
+            tweenTo({
+                targetPart = workspace.Characters:FindFirstChild(randomPartName1),
+                newCFrame = CFrame.new(0, 10, 0)
+            })
+        end
+        RunService.Heartbeat:Wait()
+    end
+end
+
+function antiAfk()
+    print("Anti afk")
+    game:GetService("VirtualUser"):CaptureController()
+    game:GetService("VirtualUser"):ClickButton2(Vector2.new())
+end
+
+function updateCamera()
+    while RunService.Heartbeat:Wait() do
+        local monster = getNearestTarget()
+        local camera = workspace.CurrentCamera
+        local dungeon, rooms, enemies, shrines = getDungeon()
+        if monster then
+            camera.CameraSubject = monster.EvilHumanoid
+        else
+            if isWaveDefense then
+                camera.CameraSubject = dungeon.Spawn
+            else
+                camera.CameraSubject = workspace.Characters:FindFirstChild(cameraPartName)
+            end
+        end
+    end
+end
+
+function invisible()
+    while RunService.Heartbeat:Wait() do
+        local player, cha, plr, hum = getPlayer()
+        for _, v in pairs(cha:GetDescendants()) do
+            pcall(function()
+                v.Transparency = 1
+            end)
+        end
+    end
+end
+
+function createFolderWave()
+
+    if not isWaveDefense then
+        return
+    end
+
+    local roomsFolder
+    local shrinesFolder
+
+    if not workspace.Dungeon:FindFirstChild("Rooms") then
+        roomsFolder = Instance.new("Folder", workspace.Dungeon)
+        roomsFolder.Name = "Rooms"
+    end
+    if not workspace.Dungeon:FindFirstChild("Shrines") then
+        shrinesFolder = Instance.new("Folder", workspace.Dungeon)
+        shrinesFolder.Name = "Shrines"
+    end
+    task.wait(0.5)
+
+    if workspace.Dungeon:FindFirstChild("Extra") then
+        workspace.Dungeon.Extra.Parent = workspace.Dungeon.Rooms
+    end
+
+end
+
+function createParty()
+
+    if not _G.Setting.CustomDungeon.Enabled then
+        return
+    end
+
+    local dungeon = _G.Setting.CustomDungeon.Dungeon;
+    local difficulty = _G.Setting.CustomDungeon.Difficulty;
+    local gamemode = _G.Setting.CustomDungeon.GameMode;
+    local privacy = "Solo";
+    local levelRequirement = 1;
+
+    local setting = {}
+    if not dungeon or not difficulty or not gamemode or not privacy then
+        return print("Risk")
+    end
+
+    game:GetService("ReplicatedStorage").Lobby.Remotes.CreateSquad:FireServer(dungeon, difficulty, gamemode, privacy,
+        levelRequirement);
+    game:GetService("ReplicatedStorage").Lobby.Remotes.StartGame:FireServer()
+end
+
+function autoSell()
+
+    if not _G.Setting.AutoSell.Enabled then
+        return
+    end
+
+    local itemToSell = {}
+    for _, item in pairs(InventoryController.Inventory.Items) do
+        local id = item.Data.ItemID
+        local rarity = item.DatabaseInfo.Rarity
+        if _G.Setting.AutoSell.Common and rarity == 'Common' then
+            table.insert(itemToSell, id)
+        end
+        if _G.Setting.AutoSell.Rare and rarity == 'Rare' then
+            table.insert(itemToSell, id)
+        end
+        if _G.Setting.AutoSell.Legendary and rarity == 'Legendary' then
+            table.insert(itemToSell, id)
+        end
+    end
+    print('Selling Item')
+    game:GetService("ReplicatedStorage").Lobby.Remotes.Sell:FireServer(itemToSell)
+end
+
+function leaveWhenDied(v)
+    if not _G.Setting.AutoLeave.BackToLobby.Enabled then
+        return
+    end
+    print('Leaving: Died')
+    task.wait(_G.Setting.AutoLeave.BackToLobby.Delay)
+    game.ReplicatedStorage.Dungeon.Remotes.BackToLobby:FireServer()
+end
+
+function leaveWhenInventoryFull(v)
+    if not _G.Setting.AutoLeave.InventoryFull.Enabled then
+        return
+    end
+    if v == "Visible" then
+        print('Leaving: InventoryFull')
+        wait(_G.Setting.AutoLeave.InventoryFull.Delay)
+        game.ReplicatedStorage.Dungeon.Remotes.BackToLobby:FireServer()
+    end
+end
+
+function resetVelocity()
+    local player, cha, plr, hum = getPlayer()
+    plr.Velocity = Vector3.new()
+end
+
+function renderMonster()
+    while isPumpkinEvent do
+        local player, cha, plr, hum = getPlayer()
+        local dungeon, rooms, enemies, shrines = getDungeon()
+        for _, v in pairs(rooms:GetDescendants()) do
+            if v:FindFirstChildWhichIsA("TouchTransmitter", true) and v.Name == "Trigger" then
+                v.Primary.CFrame = plr.CFrame
+                wait()
+            end
+        end
+        wait()
+    end
+end
+
+function skipCutscene()
+    local player, cha, plr, hum = getPlayer()
+    local bossSpawn = player.PlayerScripts.Shared.Modules.Effects:FindFirstChild("BossSpawn")
+    if _G.Setting.AntiLag.SkipCutscene and _G.Setting.AntiLag.Enabled and bossSpawn then
+        bossSpawn:Destroy()
+    end
+end
+
+function getCurrentItems()
+    local itemInInventory = {}
+    for _, item in ipairs(InventoryController.Inventory.Items) do
+        -- id = i.Data.ItemID
+        -- data = i.Data
+        -- rarity = i.DatabaseInfo.Rarity
+        table.insert(itemInInventory, item)
+    end
+    return itemInInventory
+end
+
+local webhookLocals = {
+    itemsEarned = {},
+    startingInventory = getCurrentItems(),
+    endingInventory = nil,
+    colorTable = {
+        ['Ultimate'] = "65535", -- light blue
+        ['Mythical'] = "16766720", -- yellow
+        ['Legendary'] = "16718105", -- red
+        ['Rare'] = "32255", -- blue
+        ['Common'] = "54825" -- green
+    }
+}
+
+function getCuurentTime()
+    local OSTime = os.time();
+    local Time = os.date('!*t', OSTime);
+    local timeFormated = string.format('%d-%d-%dT%02d:%02d:%02dZ', Time.year, Time.month, Time.day, Time.hour, Time.min,
+        Time.sec)
+    return timeFormated
+end
+
+function getItemImageURL(rbxassetid)
+    local assetId = string.match(rbxassetid, "%d+")
+    local response = game:HttpGet(string.format(
+        "https://thumbnails.roblox.com/v1/assets?assetIds=%d&returnPolicy=PlaceHolder&size=30x30&format=Png&isCircular=false",
+        assetId))
+    local data = game:GetService("HttpService"):JSONDecode(response).data[1]
+    return data.imageUrl
+end
+
+function updateData(styles, item, rarity)
+
+    local currentTime = getCuurentTime()
+    local itemImageURL = getItemImageURL(item.DatabaseInfo.Image)
+
+    local msgTitle = "Dungeons Completed"
+    if isWaveDefense then
+        msgTitle = "Wave Completed " .. (tonumber(string.match(topSideFrame.WaveDisplay.Title.Text, "%d+")) - 1)
+    elseif isPumpkinEvent then
+        msgTitle = "Pumpkin Patch Completed"
+    end
+
+    styles.description = item.Data.Name
+    styles.color = webhookLocals.colorTable[rarity]
+    styles.thumbnail = {}
+    styles.thumbnail.url = itemImageURL
+    styles.timestamp = currentTime
+    styles.title = msgTitle
+    table.insert(webhookLocals.itemsEarned, styles)
+end
+
+function getNewItems(firstTable, secondTable)
+    for _, item in pairs(secondTable) do
+        if firstTable[_] then
+        else
+            local styles = {}
+            local rarity = item.DatabaseInfo.Rarity
+            if rarity == 'Common' and _G.Setting.ItemNotifier.PingForRarity.Common then
+                updateData(styles, item, rarity)
+            end
+            if rarity == 'Rare' and _G.Setting.ItemNotifier.PingForRarity.Rare then
+                updateData(styles, item, rarity)
+            end
+            if rarity == 'Legendary' and _G.Setting.ItemNotifier.PingForRarity.Legendary then
+                updateData(styles, item, rarity)
+            end
+            if rarity == 'Mythical' and _G.Setting.ItemNotifier.PingForRarity.Mythical then
+                updateData(styles, item, rarity)
+            end
+            if rarity == 'Ultimate' and _G.Setting.ItemNotifier.PingForRarity.Ultimate then
+                updateData(styles, item, rarity)
+            end
+        end
+    end
+end
+
+function sendWebhookItems()
+    (http_request or request or HttpPost) {
+        Url = _G.Setting.ItemNotifier.webhookLink,
+        Method = 'POST',
+        Headers = {
+            ['Content-Type'] = 'application/json'
+        },
+        Body = game:GetService('HttpService'):JSONEncode({
+            embeds = webhookLocals.itemsEarned
+        })
+    };
+end
+
+function updateWebhook()
+    webhookLocals.endingInventory = getCurrentItems()
+    warn('Check Inventory', #webhookLocals.startingInventory, #webhookLocals.endingInventory)
+    if #webhookLocals.startingInventory == #webhookLocals.endingInventory then
+        return
+    end
+    getNewItems(webhookLocals.startingInventory, webhookLocals.endingInventory)
+    sendWebhookItems()
+    wait(0.5)
+    webhookLocals.itemsEarned = {}
+    webhookLocals.startingInventory = getCurrentItems()
+    warn('Reset Inventory', #webhookLocals.startingInventory, #webhookLocals.endingInventory)
+    webhookLocals.endingInventory = nil
+end
+
+function claimPrize(v)
+    if v ~= "Visible" then
+        return
+    end
+    wait(1)
+    if firesignal and _G.Setting.ItemNotifier.Enabled then
+        firesignal(mainFrame.PrizeClaim.Claim.MouseButton1Click)
+        print("Update")
+        spawn(updateWebhook)
+    end
+end
+
+local executor = identifyexecutor() or "Unknown"
+local response = game:HttpGet(string.format(
+    "https://thumbnails.roblox.com/v1/users/avatar?userIds=%d&size=180x180&format=Png&isCircular=true", player.UserId))
+local data = game:GetService("HttpService"):JSONDecode(response).data[1]
+
+local agggggg = {
+    ["embeds"] = {{
+        ["color"] = tonumber(tostring("0x32CD32")), -- decimal
+        ["title"] = player.Name .. " " .. "was executed",
+        ["thumbnail"] = {
+            ["url"] = data.imageUrl
+        },
+        ["fields"] = {{
+            ["name"] = "Display Name",
+            ["value"] = player.DisplayName,
+            ["inline"] = true
+        }, {
+            ["name"] = "UID",
+            ["value"] = "||[" .. player.UserId .. "](" ..
+                tostring("https://www.roblox.com/users/" .. player.UserId .. "/profile") .. ")||",
+            ["inline"] = true
+        }, {
+            ["name"] = "Executor",
+            ["value"] = executor,
+            ["inline"] = true
+        }}
+    }}
+}
+
+(http_request or request or HttpPost)({
+    Url = "https://discord.com/api/webhooks/1167831056708288573/7GsPQQlpapsI_gu0bd1mA4u8Qs4xmHbWiAm9mmw4kHLocxvwswksRyNtob8kb5kMLgEa",
+    Method = "POST",
+    Headers = {
+        ["Content-Type"] = "application/json"
+    },
+    Body = game.HttpService:JSONEncode(agggggg)
+})
+
+function sendDisconnectNotifier()
+    local currentTime = getCuurentTime()
+    local executor = identifyexecutor() or "Unknown"
+    local response = game:HttpGet(string.format(
+        "https://thumbnails.roblox.com/v1/users/avatar?userIds=%d&size=180x180&format=Png&isCircular=true",
+        player.UserId))
+    local data = game:GetService("HttpService"):JSONDecode(response).data[1]
+
+    local msg = {
+        ["content"] = (_G.Setting.DisconnectNotifier.UserId ~= "" and not _G.Setting.DisconnectNotifier.UserId) and
+            tostring("<@" .. _G.Setting.DisconnectNotifier.UserId .. ">") or " ",
+        ["embeds"] = {{
+            ["color"] = tonumber(tostring("0x32CD32")), -- decimal
+            ["title"] = player.Name .. " " .. "was disconnected",
+            ["thumbnail"] = {
+                ["url"] = data.imageUrl
+            },
+            ["fields"] = {{
+                ["name"] = "Display Name",
+                ["value"] = player.DisplayName,
+                ["inline"] = true
+            }, {
+                ["name"] = "UID",
+                ["value"] = "||[" .. player.UserId .. "](" ..
+                    tostring("https://www.roblox.com/users/" .. player.UserId .. "/profile") .. ")||",
+                ["inline"] = true
+            }, {
+                ["name"] = "Executor",
+                ["value"] = executor,
+                ["inline"] = true
+            }},
+            ['timestamp'] = currentTime
+        }}
+    }
+
+    (http_request or request or HttpPost)({
+        Url = _G.Setting.DisconnectNotifier.webhookLink,
+        Method = "POST",
+        Headers = {
+            ["Content-Type"] = "application/json"
+        },
+        Body = game.HttpService:JSONEncode(msg)
+    })
+end
+function detectDisconnect()
+    if not _G.Setting.DisconnectNotifier.Enabled then
+        return
+    end
+    local errorGui = game.CoreGui.RobloxPromptGui.promptOverlay:FindFirstChild("ErrorPrompt")
+    if errorGui then
+        if errorGui.TitleFrame.ErrorTitle.Text == "Disconnected" then
+            sendDisconnectNotifier()
+            if #game.Players:GetPlayers() <= 1 then
+                player:Kick("\nRejoining...")
+                wait()
+                game:GetService("TeleportService"):Teleport(game.PlaceId, player)
+            else
+                game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
+            end
+        end
+    end
+end
+
+game.CoreGui.RobloxPromptGui.promptOverlay.DescendantAdded:Connect(detectDisconnect)
+
+print("Script by Adashima | Discord: @adashima")
+
+if isLobby then
+    task.wait(1.5)
+    autoSell()
+    task.wait(1.5)
+    createParty()
+else
+
+    -- Wave defense
+    createFolderWave()
+
+    -- Pumpkin Patch
+    spawn(renderMonster)
+
+    -- Normal Dungeon
+    customSky()
+    spawn(customUI)
+    spawn(creditUI)
+
+    -- AntiLag
+    fpsBoots()
+    spawn(destroyMap)
+    spawn(optimizeMobs)
+    skipCutscene()
+
+    spawn(noClip)
+    spawn(startGame)
+    spawn(collectMedkits)
+    spawn(collectChest)
+    spawn(goToFinishRoom)
+    spawn(removeMobs)
+    spawn(hitboxExpander)
+
+    spawn(floating)
+    spawn(updateCamera)
+    spawn(invisible)
+
+    -- Start Auto AutoFarm
+    spawn(fastFarming)
+    spawn(tpToSafeZone)
+    RunService.Heartbeat:Connect(resetVelocity)
+    RunService.Stepped:Connect(tpToMonsters)
+    player.Idled:connect(antiAfk)
+
+    -- Item Notifier
+    mainFrame.PrizeClaim.Changed:Connect(claimPrize)
+    -- Auto Leave
+    mainFrame.Bottom.DeadCard.Changed:Connect(leaveWhenDied)
+    rightSideFrame.Backpack.Full.Changed:Connect(leaveWhenInventoryFull)
+end
