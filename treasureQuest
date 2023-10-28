@@ -71,10 +71,10 @@ _G.Setting = {
         Enabled = true,
         Candy = 'Inf',
         Gold = 'Inf',
-        Profile = 'rbxassetid://15043729657',
+        Profile = 'rbxassetid://15149943495',
         Ability = "rbxassetid://3121097847"
     }
 }
 
 loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/smartsosilly/rblxScripts/main/srcs/treasureQuest"))()
+    "https://raw.githubusercontent.com/sapondanaisriwan/roblox/main/treasure-quest/Adashima-Quest.lua"))()
