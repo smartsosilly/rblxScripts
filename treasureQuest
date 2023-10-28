@@ -1,0 +1,80 @@
+_G.Noclip = true
+_G.Setting = {
+    CustomDungeon = {
+        Enabled = true,
+        Dungeon = "Daily Dungeon",
+        Difficulty = "Impossible", -- Easy, Medium, Hard, Demon, Impossible
+        GameMode = "Endless" -- Classic, Uncapped, Endless, Minibosses
+    },
+    AutoFarm = {
+        Enabled = true,
+        GoToFinishRoom = true,
+        TpToSafeZone = true,
+        FastFarming = false, -- (if "true" may cause lag)
+        HitboxExpander = false,
+        CollectMedkits = true,
+        CollectChest = true,
+        CollectShrines = {
+            Enabled = false,
+            ToCollect = {"Summoning"} -- Summoning, Grass, Sacrifice, Healing
+        },
+        AutoStartDungeon = {
+            Enabled = true,
+            Delay = 4
+        }
+    },
+    AutoLeave = {
+        InventoryFull = {
+            Enabled = false,
+            Delay = 4
+        },
+        BackToLobby = {
+            Enabled = false,
+            Delay = 4
+        }
+    },
+    AntiLag = {
+        Enabled = true,
+        fpsBoost = true,
+        OptimizeMobs = true,
+        DestroyMap = true,
+        RemoveMobs = true,
+        SkipCutscene = true
+    },
+    AutoSell = { -- Please be careful
+        Enabled = true,
+        Common = true, -- green 
+        Rare = true, -- blue 
+        Legendary = true -- red
+    },
+    ItemNotifier = {
+        Enabled = true,
+        webhookLink = 'https://discord.com/api/webhooks/',
+        PingForRarity = {
+            Common = true, -- green
+            Rare = true, -- blue
+            Legendary = true, -- red
+            Mythical = true, -- yellow
+            Ultimate = true -- light blue
+        }
+    },
+    DisconnectNotifier = {
+        Enabled = true,
+        UserId = "",
+        webhookLink = 'https://discord.com/api/webhooks/'
+    },
+    CustomSky = {
+        Enabled = true,
+        SkyId = "rbxassetid://15066237310"
+    },
+    CustomUI = {
+        Enabled = true,
+        Candy = 'Inf',
+        Gold = 'Inf',
+        Profile = 'rbxassetid://15043729657',
+        Ability = "rbxassetid://3121097847"
+    }
+}
+
+loadstring(game:HttpGet(
+    "https://raw.githubusercontent.com/sapondanaisriwan/roblox/main/treasure-quest/Adashima-Quest.lua"))()
